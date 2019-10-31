@@ -1,0 +1,85 @@
+---
+title: "Scraping Schedule"
+Author: "Kevin Chen"
+output: html_notebook
+---
+
+```{r}
+install.packages("rvest")
+install.packages("tidyr")
+library("rvest")
+library("tidyr")
+```
+install the needed library for scraping data also for creating and organizing data sets. 
+
+```{r}
+my_url <- "http://ems.csuchico.edu/APSS/schedule/spr2019/CSCI.shtml"
+csci_data_html <- read_html(my_url)
+
+```
+Set up the html for the collection of data for the class schedule. Setting up the indivisual class by course number.
+
+```{r}
+Class_num <- csci_data_html %>% html_nodes("td.cat_num") %>% html_text()
+
+Sect_num <- csci_data_html %>% html_nodes("td.sect") %>% html_text()
+
+Course_title <- csci_data_html %>% html_nodes("td.title") %>% html_text()
+
+Instructor <- csci_data_html %>% html_nodes("td.Instructor") %>% html_text()
+
+Enroll <- csci_data_html %>% html_nodes("td.enrtot") %>% html_text()
+```
+Storing the 
+
+```{r}
+print(Class_num)
+print(Sect_num)
+print(Course_title)
+print(Instructor)
+print(Enroll)
+```
+print out the vector of text value for each of the tables of nodes to see if they are in before creatinf the data set
+
+```{r}
+
+Schedule <- tidyr::tibble( Class= Class_num, Section= Sect_num, Title= Course_title, Instructors = Instructor, Enrollment= Enroll)
+
+```
+create the tibble so we have a data set to use.
+
+```{r}
+read_class_schedule <- function(url){ 
+csci_data_html <- read_html(url)
+
+Class_num <- csci_data_html %>% html_nodes("td.cat_num") %>% html_text()
+Sect_num <- csci_data_html %>% html_nodes("td.sect") %>% html_text()
+Course_title <- csci_data_html %>% html_nodes("td.title") %>% html_text()
+Instructor <- csci_data_html %>% html_nodes("td.Instructor") %>% html_text()
+Enroll <- csci_data_html %>% html_nodes("td.enrtot") %>% html_text()
+
+Schedule <- tidyr::tibble( Class= Class_num, Section= Sect_num, Title= Course_title, Instructors = Instructor, Enrollment= Enroll)
+return(Schedule)
+}
+```
+The function in creating the data set by just using the url.
+
+```{r}
+temp1 <- read_class_schedule("http://ems.csuchico.edu/APSS/schedule/spr2019/CSCI.shtml")
+
+temp2 <-read_class_schedule("http://ems.csuchico.edu/APSS/schedule/spr2020/CSCI.shtml")
+
+temp3 <- read_class_schedule("http://ems.csuchico.edu/APSS/schedule/spr2019/MATH.shtml")
+
+temp4 <- read_class_schedule("http://ems.csuchico.edu/APSS/schedule/spr2020/MATH.shtml")
+
+```
+creating four data set for each of the website.
+
+```{r}
+tempf1 <- rbind(temp1,temp2)
+tempf2 <- rbind(temp3,temp4)
+
+Scraping_Schedules <- rbind(tempf1,tempf2)
+```
+This part of the R code put together all of the separate data set in one large dat set called Scraping_Schedules. 
